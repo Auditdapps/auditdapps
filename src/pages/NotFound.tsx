@@ -32,7 +32,7 @@ export default function NotFound() {
     <main className="relative min-h-[80vh] overflow-hidden bg-gradient-to-b from-white to-slate-50">
       {/* Subtle brand grid & glow */}
       <div className="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(50rem_35rem_at_50%_-10%,rgba(59,130,246,0.10),transparent_60%)]" />
-      <div className="pointer-events-none absolute inset-0 -z-20 bg-[url('/assets/grid.svg')] opacity-[0.04]" />
+      <div className="pointer-events-none absolute inset-0 -z-20 bg-[url('/grid.svg')] opacity-[0.04]" />
 
       {/* Animated brand blobs */}
       <motion.div

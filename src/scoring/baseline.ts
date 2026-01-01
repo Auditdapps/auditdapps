@@ -230,7 +230,7 @@ export function buildBaselineFindings(responses: Responses, _userType: UserType)
     const like = toLikelihood(sev, state === "no" ? "no" : "partial");
 
     // Finding text
-    let prefix =
+    const prefix =
       state === "partial" || state === "contradiction"
         ? "Control partially implemented"
         : "Control missing";

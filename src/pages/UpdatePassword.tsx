@@ -174,11 +174,12 @@ export default function UpdatePassword() {
           <form onSubmit={submit} className="mt-4 space-y-4">
             {/* New password */}
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">
+              <label htmlFor="password" className="mb-1 block text-sm font-medium text-slate-700">
                 New password
               </label>
               <div className="relative">
                 <input
+                  id="password"
                   type={showPw ? "text" : "password"}
                   value={pw}
                   onChange={(e) => setPw(e.target.value)}
@@ -228,11 +229,12 @@ export default function UpdatePassword() {
 
             {/* Confirm */}
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">
+              <label htmlFor="password2" className="mb-1 block text-sm font-medium text-slate-700">
                 Confirm new password
               </label>
               <div className="relative">
                 <input
+                  id="password2"
                   type={showPw2 ? "text" : "password"}
                   value={pw2}
                   onChange={(e) => setPw2(e.target.value)}

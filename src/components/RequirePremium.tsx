@@ -1,10 +1,10 @@
 // src/components/RequirePremium.tsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
 
 type RequirePremiumProps = {
-  children: JSX.Element;
+  children: ReactNode;
 };
 
 type ProfileRow = {

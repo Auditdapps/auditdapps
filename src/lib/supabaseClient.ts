@@ -24,12 +24,6 @@ export const supabase: SupabaseClient<Database> = createClient<Database>(
   }
 );
 
-// --- TEMP DEBUG (safe to remove later) ------------------------------
-// @ts-ignore
-window.supabase = supabase;
-// @ts-ignore
-window.__SUPA_ENV__ = { url: SUPABASE_URL, anonFirst8: SUPABASE_ANON.slice(0, 8) };
-// -------------------------------------------------------------------
 
 // Optional re-exports for cleaner downstream imports
 export type DB = Database;

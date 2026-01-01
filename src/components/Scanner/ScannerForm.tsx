@@ -68,8 +68,11 @@ export default function ScannerForm({
       {mode === "explorer" ? (
         <div className="grid gap-3 md:grid-cols-3">
           <div className="md:col-span-1">
-            <label className="mb-1 block text-sm text-slate-600">Network</label>
+            <label htmlFor="scanner-network" className="mb-1 block text-sm text-slate-600">
+              Network
+            </label>
             <select
+              id="scanner-network"
               value={chain}
               onChange={(e) => onChainChange(e.target.value as ChainKey)}
               className="w-full rounded border px-3 py-2"
@@ -82,9 +85,13 @@ export default function ScannerForm({
               <option value="optimism">Optimism</option>
             </select>
           </div>
+
           <div className="md:col-span-2">
-            <label className="mb-1 block text-sm text-slate-600">Contract address</label>
+            <label htmlFor="scanner-address" className="mb-1 block text-sm text-slate-600">
+              Contract address
+            </label>
             <input
+              id="scanner-address"
               placeholder="0x..."
               value={address}
               onChange={(e) => onAddressChange(e.target.value)}
@@ -97,6 +104,7 @@ export default function ScannerForm({
       ) : (
         <SourceInput value={manual} onChange={onManualChange} disabled={loading} />
       )}
+
 
       <div className="mt-4">
         <button

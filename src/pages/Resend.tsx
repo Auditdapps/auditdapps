@@ -98,7 +98,7 @@ export default function Resend() {
   return (
     <div className="min-h-[calc(100vh-80px)] flex items-center justify-center bg-gradient-to-br from-white to-gray-50 px-4 sm:px-6 md:px-8 lg:px-12 py-12 md:py-20 relative overflow-hidden">
       {/* Background watermark */}
-      <div className="absolute inset-0 bg-[url('/assets/grid.svg')] opacity-5 bg-no-repeat bg-center bg-cover pointer-events-none" />
+      <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5 bg-no-repeat bg-center bg-cover pointer-events-none" />
 
       {/* Animated card */}
       <motion.div

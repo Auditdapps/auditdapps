@@ -114,10 +114,12 @@ export default function RequestManualAudit() {
           >
             {/* Project URL */}
             <div>
-              <label className="block text-sm font-medium mb-1.5">
+              <label htmlFor="url" className="block text-sm font-medium mb-1.5">
                 Project / Repo / App URL
               </label>
               <input
+                id="url"
+                name="url"
                 type="url"
                 value={project}
                 onChange={(e) => setProject(e.target.value)}
@@ -133,10 +135,12 @@ export default function RequestManualAudit() {
 
             {/* Contact */}
             <div>
-              <label className="block text-sm font-medium mb-1.5">
+              <label htmlFor="contact" className="block text-sm font-medium mb-1.5">
                 Contact Email / Telegram / Discord
               </label>
               <input
+                id="contact"
+                name="contact"
                 type="text"
                 value={contact}
                 onChange={(e) => setContact(e.target.value)}
@@ -151,10 +155,11 @@ export default function RequestManualAudit() {
 
             {/* Notes */}
             <div>
-              <label className="block text-sm font-medium mb-1.5">
+              <label htmlFor="notes" className="block text-sm font-medium mb-1.5">
                 Notes (Optional)
               </label>
               <textarea
+                id="notes"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Scope, timelines, target networks, critical components, upgrade plans, specific concerns…"

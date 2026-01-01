@@ -38,5 +38,7 @@ export async function loadAndPersistPendingAudit(): Promise<PendingAuditPayload 
 export function clearPendingAudit() {
   try {
     localStorage.removeItem(KEY);
-  } catch {}
+  } catch (e) {
+    console.error("[pendingAudit] failed to clear:", e);
+  }
 }

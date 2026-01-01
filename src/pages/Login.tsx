@@ -123,9 +123,16 @@ export default function Login() {
           <form onSubmit={handleLogin} className="space-y-4">
             {/* Email */}
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Email</label>
+              <label
+                htmlFor="email"
+                className="mb-1 block text-sm font-medium text-slate-700"
+              >
+                Email
+              </label>
+
               <div className="relative">
                 <input
+                  id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -142,13 +149,21 @@ export default function Login() {
             {/* Password */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="block text-sm font-medium text-slate-700">Password</label>
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-slate-700"
+                >
+                  Password
+                </label>
+
                 <Link to="/forgot-password" className="text-xs text-blue-600 hover:underline">
                   Forgot your password?
                 </Link>
               </div>
+
               <div className="relative">
                 <input
+                  id="password"
                   type={showPw ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -169,8 +184,10 @@ export default function Login() {
                   {showPw ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
+
               {caps && <p className="mt-1 text-xs text-amber-600">Caps Lock is on</p>}
             </div>
+
 
             {/* Options */}
             <div className="flex items-center justify-between">

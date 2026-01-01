@@ -120,10 +120,10 @@ const AboutUs: React.FC = () => {
               Welcome to AuditDApps, your dedicated partner in navigating the ever-evolving realm
               of decentralized applications (DApps). Our commitment extends beyond simplifying the
               complexities of DApp security; we provide a proactive, user-centric approach.
-              Whether you're an experienced developer or taking your first steps into the
+              Whether you&apos;re an experienced developer or taking your first steps into the
               decentralized landscape, AuditDApps is meticulously crafted to ensure a seamless,
-              secure, and successful journey. With us, your DApp security isn't just a priority—
-              it's a personalized experience tailored to empower and elevate your digital ambitions.
+              secure, and successful journey. With us, your DApp security isn&apos;t just a priority—
+              it&apos;s a personalized experience tailored to empower and elevate your digital ambitions.
             </p>
 
             <p className="mt-3 leading-relaxed text-slate-700">
@@ -219,7 +219,7 @@ const AboutUs: React.FC = () => {
                 },
                 {
                   icon: <Users className="h-5 w-5 text-indigo-600" />,
-                  text: "Partnership mentality—enable your team, don’t block it.",
+                  text: "Partnership mentality—enable your team, don&apos;t block it.",
                 },
               ].map((h, i) => (
                 <motion.li

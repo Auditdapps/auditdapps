@@ -161,9 +161,11 @@ export default function Register() {
           <form id="register-form" onSubmit={handleRegister} className="grid gap-5 md:grid-cols-2 md:gap-6">
             {/* Email */}
             <div className="md:col-span-2">
-              <label className="mb-1 block text-sm font-medium text-slate-700">Work email</label>
+              <label htmlFor="email" className="mb-1 block text-sm font-medium text-slate-700">Work email</label>
               <div className="relative">
                 <input
+                  id="email" 
+                  name="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -179,9 +181,11 @@ export default function Register() {
 
             {/* Org */}
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Organization / Project</label>
+              <label htmlFor="orgname" className="mb-1 block text-sm font-medium text-slate-700">Organization / Project</label>
               <div className="relative">
                 <input
+                  id="orgname"
+                  name="orgname"
                   type="text"
                   value={orgName}
                   onChange={(e) => setOrgName(e.target.value)}
@@ -196,9 +200,10 @@ export default function Register() {
 
             {/* Role */}
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Your role</label>
+              <label htmlFor="role" className="mb-1 block text-sm font-medium text-slate-700">Your role</label>
               <div className="relative">
                 <select
+                  id="role"
                   value={role}
                   onChange={(e) => setRole(e.target.value as Role)}
                   className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 pl-10 text-[15px] outline-none ring-blue-500/30 focus:ring-2"
@@ -215,11 +220,13 @@ export default function Register() {
             {/* Password */}
             <div className="md:col-span-2">
               <div className="flex items-center justify-between mb-1">
-                <label className="block text-sm font-medium text-slate-700">Password</label>
+                <label htmlFor="password" className="block text-sm font-medium text-slate-700">Password</label>
                 <span className="text-xs text-slate-500">{strengthLabel}</span>
               </div>
               <div className="relative">
                 <input
+                  id="password"
+                  name="password"
                   type={showPw ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

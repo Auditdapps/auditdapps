@@ -1,5 +1,5 @@
 // src/components/Scanner/SourceInput.tsx
-import { useState } from "react";
+import { useId, useState } from "react";
 import type { SubmittedManualSource } from "./ScannerForm";
 
 type Props = {
@@ -12,6 +12,13 @@ export default function SourceInput({ value, onChange, disabled }: Props) {
   const [source, setSource] = useState<string>(value?.sourceCode || "");
   const [compiler, setCompiler] = useState<string>(value?.compilerVersion || "");
   const [contractName, setContractName] = useState<string>(value?.contractName || "");
+
+  // Unique ids per component instance (safe if component renders multiple times)
+  const uid = useId();
+  const sourceId = `source-${uid}`;
+  const fileId = `file-${uid}`;
+  const compilerId = `compiler-${uid}`;
+  const contractId = `contract-${uid}`;
 
   function push() {
     onChange({
@@ -41,6 +48,7 @@ export default function SourceInput({ value, onChange, disabled }: Props) {
     } catch {
       // not JSON — treat as Solidity/text
     }
+
     setSource(text);
     onChange({
       sourceCode: text,
@@ -51,8 +59,11 @@ export default function SourceInput({ value, onChange, disabled }: Props) {
 
   return (
     <div className="rounded-xl border border-slate-200 p-3">
-      <label className="mb-1 block text-sm text-slate-600">Paste Solidity source (or multi-file JSON)</label>
+      <label htmlFor={sourceId} className="mb-1 block text-sm text-slate-600">
+        Paste Solidity source (or multi-file JSON)
+      </label>
       <textarea
+        id={sourceId}
         value={source}
         onChange={(e) => setSource(e.target.value)}
         onBlur={push}
@@ -64,14 +75,25 @@ export default function SourceInput({ value, onChange, disabled }: Props) {
 
       <div className="mt-3 flex flex-col gap-3 md:flex-row md:items-end">
         <div>
-          <label className="mb-1 block text-sm text-slate-600">Upload file</label>
-          <input type="file" accept=".sol,.txt,.json" onChange={onFile} disabled={disabled} />
+          <label htmlFor={fileId} className="mb-1 block text-sm text-slate-600">
+            Upload file
+          </label>
+          <input
+            id={fileId}
+            type="file"
+            accept=".sol,.txt,.json"
+            onChange={onFile}
+            disabled={disabled}
+          />
         </div>
 
         <div className="grid flex-1 gap-3 md:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm text-slate-600">Compiler (optional)</label>
+            <label htmlFor={compilerId} className="mb-1 block text-sm text-slate-600">
+              Compiler (optional)
+            </label>
             <input
+              id={compilerId}
               value={compiler}
               onChange={(e) => setCompiler(e.target.value)}
               onBlur={push}
@@ -80,9 +102,13 @@ export default function SourceInput({ value, onChange, disabled }: Props) {
               disabled={disabled}
             />
           </div>
+
           <div>
-            <label className="mb-1 block text-sm text-slate-600">Contract name (optional)</label>
+            <label htmlFor={contractId} className="mb-1 block text-sm text-slate-600">
+              Contract name (optional)
+            </label>
             <input
+              id={contractId}
               value={contractName}
               onChange={(e) => setContractName(e.target.value)}
               onBlur={push}

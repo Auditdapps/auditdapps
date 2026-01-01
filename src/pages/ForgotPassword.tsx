@@ -87,9 +87,11 @@ export default function ForgotPassword() {
           {/* Form */}
           <form onSubmit={onSubmit} className="space-y-4">
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Email address</label>
+              <label htmlFor="email" className="mb-1 block text-sm font-medium text-slate-700">Email address</label>
               <div className="relative">
                 <input
+                  id="email" 
+                  name="email"
                   type="email"
                   required
                   value={email}

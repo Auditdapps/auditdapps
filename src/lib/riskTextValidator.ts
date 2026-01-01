@@ -30,7 +30,7 @@ const RX_TAG_MIT  = /\[\s*mitigation\s*:\s*(?:fully?\s*mitigated|full|partially?
 
 export function validateAndFixAuditMarkdown(raw: string): ValidationResult {
   const warnings: string[] = [];
-  let text = (raw ?? "").replace(/\r\n/g, "\n").trim();
+  const text = (raw ?? "").replace(/\r\n/g, "\n").trim();
 
   if (!text) {
     warnings.push("Markdown was empty; created a minimal skeleton.");

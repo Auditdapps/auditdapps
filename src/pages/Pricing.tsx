@@ -292,6 +292,7 @@ function PeriodToggle({
     <div
       role="tablist"
       aria-label="Billing period"
+      tabIndex={0}
       onKeyDown={onKeyDown}
       className="mx-auto mt-6 inline-flex rounded-full border border-slate-200 bg-white p-1"
     >

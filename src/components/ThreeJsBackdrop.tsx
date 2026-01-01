@@ -1,7 +1,5 @@
 // src/components/ThreeJsBackdrop.tsx
 import { useEffect, useRef } from "react";
-import * as THREE from "three";
-import { GLTFLoader, RoomEnvironment, type GLTF } from "three-stdlib";
 
 type Props = {
   /** Optional path to a GLB model placed in /public (e.g. "/models/shield.glb") */
@@ -22,137 +20,136 @@ export default function ThreeJsBackdrop({
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+    let cleanup: (() => void) | null = null;
 
-    // Scene
-    const scene = new THREE.Scene();
+    (async () => {
+      const container = containerRef.current;
+      if (!container) return;
 
-    // Renderer
-    const renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      alpha: true,
-      powerPreference: "high-performance",
-    });
+      // 👇 Dynamic imports — no type-resolution drama at build time
+      const THREE: any = await import("three");
+      const { GLTFLoader, RoomEnvironment }: any = await import("three-stdlib");
 
-    // Support old/new three color-space APIs without type errors
-    if ("outputColorSpace" in renderer) {
-      (renderer as any).outputColorSpace = (THREE as any).SRGBColorSpace;
-    } else {
-      (renderer as any).outputEncoding = THREE.sRGBEncoding;
-    }
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.0;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    container.appendChild(renderer.domElement);
+      // Scene
+      const scene = new THREE.Scene();
 
-    // Camera
-    const camera = new THREE.PerspectiveCamera(fov, 1, 0.1, 100);
-    camera.position.set(0, 0, distance);
+     // Renderer
+      const renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true,
+        powerPreference: "high-performance",
+      });
 
-    // Lights
-    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-    const key = new THREE.DirectionalLight(0xffffff, 1.1);
-    key.position.set(4, 6, 6);
-    scene.add(key);
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.0;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      container.appendChild(renderer.domElement);
 
-    // Environment reflections (safe across versions)
-    const pmrem = new THREE.PMREMGenerator(renderer);
-    let envRT: ReturnType<THREE.PMREMGenerator["fromScene"]> | null = null;
-    try {
-      envRT = pmrem.fromScene(new (RoomEnvironment as any)(), 0.04);
-      scene.environment = envRT.texture;
-    } catch {
-      // ignore if RoomEnvironment types don’t match this three version
-    }
 
-    // Content group
-    const group = new THREE.Group();
-    scene.add(group);
+      // Camera
+      const camera = new THREE.PerspectiveCamera(fov, 1, 0.1, 100);
+      camera.position.set(0, 0, distance);
 
-    // Fallback geometry (if GLB fails)
-    const fallbackGeo = new THREE.TorusKnotGeometry(1.2, 0.35, 200, 32);
-    const fallbackMat = new THREE.MeshPhysicalMaterial({
-      color: 0x5b6cff,
-      metalness: 0.6,
-      roughness: 0.2,
-      transmission: 0.0,
-      clearcoat: 0.6,
-      envMapIntensity: 0.9,
-    });
-    const fallbackMesh = new THREE.Mesh(fallbackGeo, fallbackMat);
-    fallbackMesh.visible = false;
-    group.add(fallbackMesh);
+      // Lights
+      scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+      const key = new THREE.DirectionalLight(0xffffff, 1.1);
+      key.position.set(4, 6, 6);
+      scene.add(key);
 
-    // Load GLB
-    const loader = new GLTFLoader();
-    let loadedMesh: THREE.Object3D | null = null;
-
-    loader.load(
-      modelPath ?? "",
-      (gltf: GLTF) => {
-        loadedMesh = gltf.scene;
-
-        // Explicit param type avoids “implicit any” complaint
-        loadedMesh.traverse((obj: THREE.Object3D) => {
-          if (obj instanceof THREE.Mesh) {
-            obj.castShadow = false;
-            obj.receiveShadow = false;
-
-            // material can be a single Material or an array
-            const m = obj.material as THREE.Material | THREE.Material[] | undefined;
-            if (Array.isArray(m)) {
-              m.forEach((mat) => ((mat as any).envMapIntensity = 0.9));
-            } else if (m) {
-              (m as any).envMapIntensity = 0.9;
-            }
-          }
-        });
-
-        loadedMesh.scale.setScalar(1.2);
-        group.add(loadedMesh);
-      },
-      undefined,
-      () => {
-        // On error, show fallback
-        fallbackMesh.visible = true;
+      // Environment reflections (best effort)
+      const pmrem = new THREE.PMREMGenerator(renderer);
+      let envRT: any = null;
+      try {
+        envRT = pmrem.fromScene(new RoomEnvironment(), 0.04);
+        scene.environment = envRT.texture;
+      } catch {
+        /* ignore if RoomEnvironment mismatches version */
       }
-    );
 
-    // Resize to container
-    const resize = () => {
-      const w = container.clientWidth;
-      const h = container.clientHeight;
-      if (!w || !h) return;
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h, false);
-    };
-    const observer = new ResizeObserver(resize);
-    observer.observe(container);
-    resize();
+      // Content group
+      const group = new THREE.Group();
+      scene.add(group);
 
-    // Animate
-    const tick = () => {
-      group.rotation.y += rotationSpeed;
-      group.rotation.x = Math.sin(performance.now() * 0.0003) * 0.08;
-      renderer.render(scene, camera);
-      rafRef.current = requestAnimationFrame(tick);
-    };
-    tick();
+      // Fallback geometry if GLB fails
+      const fallbackGeo = new THREE.TorusKnotGeometry(1.2, 0.35, 200, 32);
+      const fallbackMat = new THREE.MeshPhysicalMaterial({
+        color: 0x5b6cff,
+        metalness: 0.6,
+        roughness: 0.2,
+        transmission: 0.0,
+        clearcoat: 0.6,
+        envMapIntensity: 0.9,
+      });
+      const fallbackMesh = new THREE.Mesh(fallbackGeo, fallbackMat);
+      fallbackMesh.visible = false;
+      group.add(fallbackMesh);
 
-    // Cleanup
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      observer.disconnect();
-      scene.clear();
-      fallbackGeo.dispose();
-      fallbackMat.dispose();
-      if (envRT) envRT.dispose();
-      pmrem.dispose();
-      renderer.dispose();
-      renderer.domElement.remove();
-    };
+      // Try to load GLB
+      const loader = new GLTFLoader();
+      let loadedMesh: any = null;
+
+      loader.load(
+        modelPath ?? "",
+        (gltf: any) => {
+          loadedMesh = gltf.scene;
+          loadedMesh.traverse((obj: any) => {
+            if (obj instanceof THREE.Mesh) {
+              obj.castShadow = false;
+              obj.receiveShadow = false;
+
+              const m = obj.material;
+              if (Array.isArray(m)) m.forEach((mat) => (mat.envMapIntensity = 0.9));
+              else if (m) m.envMapIntensity = 0.9;
+            }
+          });
+          loadedMesh.scale.setScalar(1.2);
+          group.add(loadedMesh);
+        },
+        undefined,
+        () => {
+          // On error, show fallback
+          fallbackMesh.visible = true;
+        }
+      );
+
+      // Resize to container
+      const resize = () => {
+        const w = container.clientWidth;
+        const h = container.clientHeight;
+        if (!w || !h) return;
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        renderer.setSize(w, h, false);
+      };
+      const observer = new ResizeObserver(resize);
+      observer.observe(container);
+      resize();
+
+      // Animate
+      const tick = () => {
+        group.rotation.y += rotationSpeed;
+        group.rotation.x = Math.sin(performance.now() * 0.0003) * 0.08;
+        renderer.render(scene, camera);
+        rafRef.current = requestAnimationFrame(tick);
+      };
+      tick();
+
+      // Cleanup function
+      cleanup = () => {
+        if (rafRef.current) cancelAnimationFrame(rafRef.current);
+        observer.disconnect();
+        scene.clear();
+        fallbackGeo.dispose();
+        fallbackMat.dispose();
+        if (envRT) envRT.dispose();
+        pmrem.dispose();
+        renderer.dispose();
+        renderer.domElement.remove();
+      };
+    })();
+
+    return () => cleanup?.();
   }, [distance, fov, modelPath, rotationSpeed]);
 
   return (

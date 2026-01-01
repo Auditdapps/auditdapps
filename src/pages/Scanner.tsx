@@ -103,7 +103,7 @@ export default function ScannerPage() {
       setScore(result.score);
       setSummaryMd(result.summary_md);
       setFindings(result.findings || []);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("[ScannerPage] analyzeContract error:", err);
       setError("We couldn’t complete the scan. Try again shortly.");
     } finally {
@@ -194,8 +194,9 @@ export default function ScannerPage() {
             <form className="space-y-4" onSubmit={onSubmit}>
               {/* Compiler */}
               <div>
-                <label className="block text-xs font-medium mb-1">Compiler version</label>
+                <label htmlFor="compiler" className="block text-xs font-medium mb-1">Compiler version</label>
                 <input
+                  id="compiler"
                   type="text"
                   value={compiler}
                   onChange={(e) => setCompiler(e.target.value)}
@@ -207,16 +208,17 @@ export default function ScannerPage() {
               {/* Upload + Textarea */}
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <label className="block text-xs font-medium">Solidity source</label>
+                  <label htmlFor="sourceCode" className="block text-xs font-medium">Solidity source</label>
 
-                  <label className="inline-flex items-center gap-2 rounded-lg border border-dashed border-border bg-background px-3 py-1.5 text-[11px] cursor-pointer hover:bg-accent/40">
+                  <label htmlFor="upload" className="inline-flex items-center gap-2 rounded-lg border border-dashed border-border bg-background px-3 py-1.5 text-[11px] cursor-pointer hover:bg-accent/40">
                     <UploadCloud className="h-3.5 w-3.5" />
                     <span>Upload</span>
-                    <input type="file" accept=".sol,.txt,.json" className="hidden" onChange={handleFileUpload} />
+                    <input id="upload" type="file" accept=".sol,.txt,.json" className="hidden" onChange={handleFileUpload} />
                   </label>
                 </div>
 
                 <textarea
+                  id="sourceCode"
                   value={sourceCode}
                   onChange={(e) => setSourceCode(e.target.value)}
                   rows={12}

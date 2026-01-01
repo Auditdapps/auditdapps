@@ -841,7 +841,7 @@ export default function AuditDetail() {
               </ul>
               <p>
                 This visual helps prioritize action. For example, critical issues
-                with "None" status are urgent.
+                with &quot;None&quot; status are urgent.
               </p>
             </div>
           </MotionCard>
@@ -1086,24 +1086,32 @@ export default function AuditDetail() {
                 {/* FORM */}
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm mb-1">Project Name</label>
-                    <input
-                      className="w-full rounded border border-border bg-card px-3 py-2 text-sm"
-                      value={certProject}
-                      onChange={(e) => setCertProject(e.target.value)}
-                      placeholder="e.g. MyDapp Protocol"
-                    />
-                  </div>
+                    <div>
+                      <label htmlFor="certProject" className="block text-sm mb-1">
+                        Project Name
+                      </label>
+                      <input
+                        id="certProject"
+                        className="w-full rounded border border-border bg-card px-3 py-2 text-sm"
+                        value={certProject}
+                        onChange={(e) => setCertProject(e.target.value)}
+                        placeholder="e.g. MyDapp Protocol"
+                      />
+                    </div>
 
-                  <div>
-                    <label className="block text-sm mb-1">Repository URL</label>
-                    <input
-                      className="w-full rounded border border-border bg-card px-3 py-2 text-sm"
-                      value={certRepo}
-                      onChange={(e) => setCertRepo(e.target.value)}
-                      placeholder="https://github.com/user/project"
-                    />
-                  </div>
+                    <div>
+                      <label htmlFor="certRepo" className="block text-sm mb-1">
+                        Repository URL
+                      </label>
+                      <input
+                        id="certRepo"
+                        className="w-full rounded border border-border bg-card px-3 py-2 text-sm"
+                        value={certRepo}
+                        onChange={(e) => setCertRepo(e.target.value)}
+                        placeholder="https://github.com/user/project"
+                      />
+                    </div>
+                                      </div>
 
                   <label className="flex items-start gap-2 text-sm">
                     <input

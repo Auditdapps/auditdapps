@@ -122,10 +122,10 @@ export default function AdminSidebar({ open, onClose, expanded, setExpanded }: P
       </div>
 
       {open && (
-        <div
+        <button
+          type="button"
           className="lg:hidden fixed inset-0 z-40 bg-black/40"
           onClick={onClose}
-          role="button"
           aria-label="Close sidebar overlay"
         />
       )}
