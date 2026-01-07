@@ -162,6 +162,13 @@ Release history and versioning notes are documented in [`RELEASE.md`](./RELEASE.
 
 ---
 
+## Technical Deep Dives
+
+- Hybrid Smart Contract Security: Combining Static Analysis with AI-Assisted Audits  
+  https://luckaty.hashnode.dev/hybrid-smart-contract-security-combining-static-analysis-with-ai-assisted-audits
+
+---
+
 ## License
 
 This project is licensed under the **MIT License**.  
