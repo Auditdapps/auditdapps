@@ -27,9 +27,9 @@ dist-ssr
 *.zip
 supabase/.temp
 
-# Python
-__pycache__/
-*.pyc
-
 # Local test contracts
 test.sol
+__pycache__/
+*.pyc
+.venv/
+slither-venv/

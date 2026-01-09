@@ -1,3 +1,4 @@
+// src/services/slither.ts
 import type { StaticFinding } from "@/types/staticFinding";
 
 type SlitherAnalyzeResponse = {
@@ -26,6 +27,6 @@ export async function runSlitherAnalysis(args: {
 
   const data = (await res.json()) as Partial<SlitherAnalyzeResponse>;
 
-  // ✅ This is the “clean return”
-  return (data.findings ?? []) as StaticFinding[];
+  // ✅ clean + safe return (no frontend parsing)
+  return Array.isArray(data.findings) ? data.findings : [];
 }
