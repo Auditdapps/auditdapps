@@ -12,8 +12,23 @@ type ProfileRow = {
   premium_expires_at: string | null;
 };
 
+function isPremiumActive(profile: ProfileRow | null | undefined): boolean {
+  if (!profile) return false;
+
+  // ✅ Recommended: require BOTH flags
+  // - is_premium true (Stripe says subscription is active/trialing)
+  // - premium_expires_at in the future (time-based access)
+  const premiumActive =
+    profile.is_premium === true &&
+    !!profile.premium_expires_at &&
+    new Date(profile.premium_expires_at) > new Date();
+
+  return premiumActive;
+}
+
 export function RequirePremium({ children }: RequirePremiumProps) {
   const location = useLocation();
+
   const [checking, setChecking] = useState(true);
   const [needsAuth, setNeedsAuth] = useState(false);
   const [allowed, setAllowed] = useState(false);
@@ -23,45 +38,43 @@ export function RequirePremium({ children }: RequirePremiumProps) {
 
     async function run() {
       try {
-        // Get user
-        const { data: auth } = await supabase.auth.getUser();
+        setChecking(true);
+        setNeedsAuth(false);
+        setAllowed(false);
+
+        // 1) Get user
+        const { data: auth, error: authErr } = await supabase.auth.getUser();
         if (cancelled) return;
+
+        if (authErr) {
+          console.error("[RequirePremium] auth error:", authErr);
+        }
 
         const user = auth?.user;
 
         if (!user) {
           setNeedsAuth(true);
-          setChecking(false);
           return;
         }
 
-        // Get profile
+        // 2) Get profile
         const { data: profile, error } = await supabase
           .from("profiles")
           .select("is_premium, premium_expires_at")
           .eq("id", user.id)
-          .maybeSingle();
+          .maybeSingle<ProfileRow>();
+
+        if (cancelled) return;
 
         if (error) {
           console.error("[RequirePremium] profile error:", error);
+          // fail closed (treat as not premium)
+          setAllowed(false);
+          return;
         }
 
-        // PREMIUM CHECK
-        let canAccess = false;
-
-        if (profile?.is_premium === true) {
-          canAccess = true;
-        }
-
-        if (profile?.premium_expires_at) {
-          const expires = new Date(profile.premium_expires_at).getTime();
-          const now = Date.now();
-          if (expires > now) {
-            canAccess = true;
-          }
-        }
-
-        setAllowed(canAccess);
+        // 3) PREMIUM CHECK (strict, time-based)
+        setAllowed(isPremiumActive(profile));
       } finally {
         if (!cancelled) setChecking(false);
       }
@@ -100,5 +113,5 @@ export function RequirePremium({ children }: RequirePremiumProps) {
     );
   }
 
-  return children;
+  return <>{children}</>;
 }
