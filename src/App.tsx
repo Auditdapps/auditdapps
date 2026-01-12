@@ -42,9 +42,19 @@ import AuditDetails from "./pages/AuditDetails";
 import NotFound from "./pages/NotFound";
 import Home from "./pages/Home";
 
-import AdminRoute from "./components/AdminRoute";
-import AdminLayout from "./components/AdminLayout";
+import RequireAdmin from "./components/RequireAdmin";
+import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminOverview from "./pages/admin/AdminOverview";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminUserDetail from "./pages/admin/AdminUserDetail";
+import AdminAudits from "./pages/admin/AdminAudits";
+import AdminAuditDetail from "./pages/admin/AdminAuditDetail";
+import AdminRecommendations from "./pages/admin/AdminRecommendations";
+import AdminRequests from "./pages/admin/AdminRequests";
+import AdminFeedback from "./pages/admin/AdminFeedback";
+import AdminSettings from "./pages/admin/AdminSettings";
+import AdminMedia from "./pages/admin/AdminMedia";
 import PostEditor from "./pages/PostEditor";
 import BillingPage from "./pages/Billing";
 import {PaymentSuccess} from "./pages/PaymentSuccess";
@@ -59,7 +69,6 @@ import { loadAndPersistPendingAudit } from "@/lib/pendingAudit";
 // ⛔ OLD ProtectedRoute removed from dashboard
 import { RequireAuth } from "./components/RequireAuth";
 import { RequirePremium } from "./components/RequirePremium";
-import FeedbackPage from "./pages/Feedback";
 
 /* ------------------ AUTH EFFECT – CLEANED UP ------------------ */
 /* this no longer forces pricing on sign in */
@@ -124,8 +133,6 @@ function AppShell() {
         {/* Pricing / payment */}
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/auth/payment" element={<Payment />} />
-        
-
 
         {/* Blog / other pages */}
         <Route path="/how-it-works" element={<HowItWorks />} />
@@ -175,15 +182,6 @@ function AppShell() {
           }
         />
 
-        <Route path="/feedback" 
-        element={
-          <RequireAuth>
-              <FeedbackPage />
-            </RequireAuth>
-
-          }
-         />
-
         {/* Dev helper */}
   
         <Route path="/auth/payment/success" element={<PaymentSuccess />} />
@@ -196,22 +194,52 @@ function AppShell() {
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
 
-        {/* 404 */}
-        <Route path="*" element={<NotFound />} />
+        
 
         {/* ADMIN */}
         <Route
           path="/admin"
           element={
-            <AdminRoute>
+            <RequireAdmin>
               <AdminLayout />
-            </AdminRoute>
+            </RequireAdmin>
           }
         >
-          <Route index element={<AdminDashboard />} />
-          <Route path="/admin/posts/new" element={<PostEditor />} />
-          <Route path="/admin/posts/:id" element={<PostEditor />} />
+          <Route index element={<AdminOverview />} />
+
+          {/* Overview */}
+          <Route path="overview" element={<AdminOverview />} />
+
+          {/* Users */}
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="users/:id" element={<AdminUserDetail />} />
+
+          {/* Audits */}
+          <Route path="audits" element={<AdminAudits />} />
+          <Route path="audits/:id" element={<AdminAuditDetail />} />
+
+          {/* Recommendations */}
+          <Route path="recommendations" element={<AdminRecommendations />} />
+
+          {/* Manual audit requests */}
+          <Route path="requests" element={<AdminRequests />} />
+
+          {/* Feedback */}
+          <Route path="feedback" element={<AdminFeedback />} />
+
+          {/* Blog */}
+          <Route path="posts" element={<AdminDashboard />} />
+          <Route path="posts/new" element={<PostEditor />} />
+          <Route path="posts/:id" element={<PostEditor />} />
+          <Route path="posts/:id/edit" element={<PostEditor />} />
+          <Route path="posts/:id/edit" element={<PostEditor />} />
+
+          {/* Settings */}
+          <Route path="media" element={<AdminMedia />} />
+          <Route path="settings" element={<AdminSettings />} />
         </Route>
+        {/* 404 */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
 
       {!isAdmin && <Footer />}
