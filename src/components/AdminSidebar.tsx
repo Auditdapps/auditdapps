@@ -3,6 +3,11 @@ import React from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
+  Users,
+  ShieldCheck,
+  AlertTriangle,
+  ClipboardList,
+  MessageSquareText,
   FileText,
   FilePlus2,
   BookMarked,
@@ -41,16 +46,23 @@ type Section = {
 const sections: Section[] = [
   {
     label: "Overview",
-    items: [{ to: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true }],
+    items: [
+      { to: "/admin", icon: LayoutDashboard, label: "Overview", end: true },
+      { to: "/admin/users", icon: Users, label: "Users" },
+      { to: "/admin/audits", icon: ShieldCheck, label: "Audits" },
+      { to: "/admin/recommendations", icon: AlertTriangle, label: "Recommendations" },
+      { to: "/admin/requests", icon: ClipboardList, label: "Manual Requests" },
+      { to: "/admin/feedback", icon: MessageSquareText, label: "Feedback" },
+    ],
   },
   {
     label: "Content",
     items: [
-      { to: "/admin", icon: FileText, label: "Blog Posts" },
+      { to: "/admin/posts", icon: FileText, label: "Blog Posts" },
       { to: "/admin/posts/new", icon: FilePlus2, label: "New Post", accent: true },
-      { to: "/admin?status=draft", icon: BookMarked, label: "Drafts", badge: "•" },
-      { to: "/admin?status=published", icon: Sparkles, label: "Published" },
-      { to: "/admin?category=all", icon: Tags, label: "Categories" },
+      { to: "/admin/posts?status=draft", icon: BookMarked, label: "Drafts", badge: "•" },
+      { to: "/admin/posts?status=published", icon: Sparkles, label: "Published" },
+      { to: "/admin/posts?category=all", icon: Tags, label: "Categories" },
       { to: "/admin/media", icon: Images, label: "Media" },
     ],
   },
