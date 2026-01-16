@@ -681,10 +681,80 @@ export default function Dashboard() {
     </div>
     <div className="overflow-auto rounded-b-2xl">
       <table className="min-w-full text-sm">
-        {/* keep your existing thead/tbody mapping here unchanged */}
-        ...
+        <thead>
+          <tr className="bg-muted text-muted-foreground">
+            <th className="py-2 px-3 text-left">Recommendation</th>
+            <th className="py-2 px-3 text-left">Severity</th>
+            <th className="py-2 px-3 text-left">Status</th>
+            <th className="py-2 px-3 text-right">Action</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {recommendations.length ? (
+            recommendations.map((r, i) => {
+              const implemented = String(r.status).toLowerCase() === "implemented";
+
+              return (
+                <motion.tr
+                  key={r.id}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2, delay: i * 0.02 }}
+                  className="border-t border-border hover:bg-accent/40"
+                >
+                  <td className="py-2 px-3">
+                    <div className="font-medium">
+                      {actionizeForDisplay(cleanTitle(r.title))}
+                    </div>
+                  </td>
+
+                  <td className="py-2 px-3">
+                    <SevPill s={r.severity} />
+                  </td>
+
+                  <td className="py-2 px-3">
+                    <span
+                      className={`text-xs px-2 py-1 rounded-full border ${
+                        implemented
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-200 dark:border-emerald-900/40"
+                          : "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-200 dark:border-amber-900/40"
+                      }`}
+                    >
+                      {implemented ? "Implemented" : "Open"}
+                    </span>
+                  </td>
+
+                  <td className="py-2 px-3 text-right">
+                    <button
+                      disabled={toggling === r.id}
+                      onClick={() =>
+                        onToggleStatus(r.id, implemented ? "open" : "implemented")
+                      }
+                      className={`inline-flex items-center px-3 h-9 rounded-full border text-sm shadow-sm
+                        ${
+                          toggling === r.id
+                            ? "opacity-50 cursor-not-allowed"
+                            : "hover:bg-accent/60"
+                        }`}
+                    >
+                      {implemented ? "Mark open" : "Mark implemented"}
+                    </button>
+                  </td>
+                </motion.tr>
+              );
+            })
+          ) : (
+            <tr>
+              <td className="py-3 px-3 text-muted-foreground" colSpan={4}>
+                No recommendations found for your latest audit.
+              </td>
+            </tr>
+          )}
+        </tbody>
       </table>
     </div>
+
   </motion.div>
 )}
 
