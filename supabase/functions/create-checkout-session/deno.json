@@ -1,0 +1,6 @@
+{
+  "lock": false,
+  "imports": {
+    "stripe": "npm:stripe@14.25.0"
+  }
+}
