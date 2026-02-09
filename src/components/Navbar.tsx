@@ -182,7 +182,18 @@ export default function Navbar() {
                     <NavLink to="/about" className={navClass} onClick={() => setMobileOpen(false)}>About Us</NavLink>
                   </SheetClose>
                   <SheetClose asChild>
-                    <NavLink to="/how-it-works" className={navClass} onClick={() => setMobileOpen(false)}>How It Works</NavLink>
+                    <NavLink to="/how-it-works" className={navClass} onClick={() => setMobileOpen(false)}>How It Works</NavLink>    
+                  <SheetClose asChild>
+                    <NavLink to="/web2-solutions" className={navClass} onClick={() => setMobileOpen(false)}>
+                      <span className="inline-flex items-center gap-2">
+                        Web2 Solutions
+                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600 ring-1 ring-slate-200">
+                          Coming soon
+                        </span>
+                      </span>
+                    </NavLink>
+                  </SheetClose>
+
                   </SheetClose>
                   <SheetClose asChild>
                     <NavLink to="/pricing" className={navClass} onClick={() => setMobileOpen(false)}>Pricing</NavLink>
