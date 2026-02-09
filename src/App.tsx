@@ -35,6 +35,7 @@ import Resend from "./pages/Resend";
 import AuthCallback from "./pages/AuthCallback";
 import Payment from "./pages/Payment";
 import HowItWorks from "./pages/HowItWorks";
+import Web2Solutions from "./pages/Web2Solutions";
 import Pricing from "./pages/Pricing";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
@@ -136,6 +137,7 @@ function AppShell() {
 
         {/* Blog / other pages */}
         <Route path="/how-it-works" element={<HowItWorks />} />
+        <Route path="/web2-solutions" element={<Web2Solutions />} />
         <Route path="/blog" element={<Blog />} />
         <Route path="/blog/:id" element={<BlogPost />} />
          <Route path="/email-confirmed" element={<EmailConfirmed />} />
