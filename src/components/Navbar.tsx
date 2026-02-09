@@ -183,6 +183,7 @@ export default function Navbar() {
                   </SheetClose>
                   <SheetClose asChild>
                     <NavLink to="/how-it-works" className={navClass} onClick={() => setMobileOpen(false)}>How It Works</NavLink>    
+                  </SheetClose>
                   <SheetClose asChild>
                     <NavLink to="/web2-solutions" className={navClass} onClick={() => setMobileOpen(false)}>
                       <span className="inline-flex items-center gap-2">
@@ -192,8 +193,6 @@ export default function Navbar() {
                         </span>
                       </span>
                     </NavLink>
-                  </SheetClose>
-
                   </SheetClose>
                   <SheetClose asChild>
                     <NavLink to="/pricing" className={navClass} onClick={() => setMobileOpen(false)}>Pricing</NavLink>
