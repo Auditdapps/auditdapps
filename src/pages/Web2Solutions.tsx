@@ -432,7 +432,9 @@ export default function Web2Solutions() {
                   <Link to="/contact?topic=web2-early-access">Join early access</Link>
                 </Button>
                 <p className="text-xs text-white/80">
-                  Prefer email? Contact us and mention "Web2 early access".
+                 <p className="text-xs text-white/80">
+                Prefer email? Contact us and mention Web2 early access.
+                </p>
                 </p>
               </div>
             </div>
