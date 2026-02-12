@@ -16,7 +16,7 @@ const PERIOD_LABEL: Record<Period, string> = {
 };
 
 const PERIOD_PRICE: Record<Period, string> = {
-  weekly: "9.99",
+  weekly: "7.99",
   monthly: "34.99",
   annual: "349.99",
 };

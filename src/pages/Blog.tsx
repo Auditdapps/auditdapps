@@ -298,7 +298,7 @@ function PostCard({ post }: PostCardProps): React.ReactElement {
   const tags = (post.tags ?? []).slice(0, 3);
 
   return (
-    <article className="group rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md focus-within:shadow-md">
+    <article className="group h-full rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md focus-within:shadow-md flex flex-col">
       <Link to={to} className="block rounded-t-2xl overflow-hidden">
         <div className="aspect-[16/10] w-full bg-slate-100">
           {post.cover ? (
@@ -312,7 +312,7 @@ function PostCard({ post }: PostCardProps): React.ReactElement {
         </div>
       </Link>
 
-      <div className="p-5">
+      <div className="p-5 flex flex-col flex-1">
         <div className="flex items-center gap-2 text-xs text-slate-500">
           {post.category ? (
             <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 font-semibold text-blue-700 ring-1 ring-blue-100">
@@ -333,15 +333,19 @@ function PostCard({ post }: PostCardProps): React.ReactElement {
           )}
         </div>
 
-        <h3 className="mt-2 text-lg font-bold tracking-tight">
+        <h3 className="mt-2 text-lg font-bold tracking-tight line-clamp-2">
           <Link to={to} className="hover:text-blue-700">
             {post.title}
           </Link>
         </h3>
 
-        {post.excerpt && <p className="mt-2 text-sm text-slate-600">{post.excerpt}</p>}
+        {post.excerpt && (
+          <p className="mt-2 text-sm text-slate-600 line-clamp-3">
+            {post.excerpt}
+          </p>
+        )}
 
-        <div className="mt-4 flex items-center justify-between">
+        <div className="mt-auto pt-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             {post.author_avatar ? (
               <img
@@ -357,6 +361,7 @@ function PostCard({ post }: PostCardProps): React.ReactElement {
               {post.author_name || "Audit DApps Team"}
             </div>
           </div>
+
           <div className="hidden sm:flex flex-wrap gap-1">
             {tags.map((t) => (
               <span
@@ -372,6 +377,7 @@ function PostCard({ post }: PostCardProps): React.ReactElement {
     </article>
   );
 }
+
 
 function Pagination({ page, totalPages, onChange }: PaginationProps): React.ReactElement {
   const canPrev = page > 1;
