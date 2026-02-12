@@ -439,7 +439,8 @@ type ContentBlock =
 
 function splitContentWithVideoEmbeds(content: string): ContentBlock[] {
   // matches {{video:https://...}}
-  const videoRegex = /\{\{video:(https?:\/\/[^\}]+)\}\}/g;
+  const videoRegex = /\{\{video:(https?:\/\/[^}]+)\}\}/g;
+
 
   const blocks: ContentBlock[] = [];
   let lastIndex = 0;
@@ -486,8 +487,16 @@ function MarkdownWithEmbeds({ content }: { content: string }): React.ReactElemen
                 className="w-full rounded-xl border border-slate-200 bg-black"
               >
                 <source src={b.src} type="video/mp4" />
+                <track
+                  kind="captions"
+                  srcLang="en"
+                  label="English"
+                  src="/captions/placeholder.vtt"
+                  default
+                />
                 Your browser does not support the video tag.
               </video>
+
               <p className="mt-2 text-sm text-slate-600">Event highlight clip</p>
             </div>
           );
