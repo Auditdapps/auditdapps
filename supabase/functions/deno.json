@@ -1,4 +1,8 @@
 {
-  "lock": false,
-  "extends": "../../deno.json"
+  "imports": {
+    "std/": "https://deno.land/std@0.224.0/",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2",
+     "stripe": "npm:stripe@14.25.0"
+
+  }
 }

@@ -261,7 +261,7 @@ export default function Contact() {
                   </a>
                   {/* (rest of socials unchanged for brevity) */}
                   <a
-                    href="https://twitter.com"
+                    href="https://x.com/Auditdapps"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="grid h-10 w-10 place-items-center rounded-full bg-black text-white transition-colors hover:bg-gray-800"
@@ -297,7 +297,7 @@ export default function Contact() {
                     </svg>
                   </a>
                   <a
-                    href="https://linkedin.com"
+                    href="https://www.linkedin.com/company/auditdapps-ltd"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="grid h-10 w-10 place-items-center rounded-full bg-blue-700 text-white transition-colors hover:bg-blue-800"

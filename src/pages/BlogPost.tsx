@@ -210,9 +210,7 @@ export default function BlogPost(): React.ReactElement {
             transition={{ duration: 0.35 }}
             className="rounded-2xl border border-slate-200 bg-white p-6 md:p-10 shadow-sm"
           >
-            <div className="prose prose-slate max-w-none prose-img:rounded-lg">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content ?? ""}</ReactMarkdown>
-            </div>
+            <MarkdownWithEmbeds content={post.content ?? ""} />
 
             {/* Tags */}
             {tags.length > 0 && (
@@ -430,6 +428,78 @@ function ShareButton({
     <button onClick={onClick} className={base}>
       {label}
     </button>
+  );
+}
+
+/* ----------------------- Markdown + Embeds ----------------------- */
+
+type ContentBlock =
+  | { type: "markdown"; value: string }
+  | { type: "video"; src: string };
+
+function splitContentWithVideoEmbeds(content: string): ContentBlock[] {
+  // matches {{video:https://...}}
+  const videoRegex = /\{\{video:(https?:\/\/[^\}]+)\}\}/g;
+
+  const blocks: ContentBlock[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = videoRegex.exec(content)) !== null) {
+    const full = match[0];
+    const src = match[1];
+    const start = match.index;
+    const end = start + full.length;
+
+    // markdown chunk before embed
+    if (start > lastIndex) {
+      blocks.push({ type: "markdown", value: content.slice(lastIndex, start) });
+    }
+
+    // embed block
+    blocks.push({ type: "video", src });
+
+    lastIndex = end;
+  }
+
+  // remaining markdown
+  if (lastIndex < content.length) {
+    blocks.push({ type: "markdown", value: content.slice(lastIndex) });
+  }
+
+  return blocks;
+}
+
+function MarkdownWithEmbeds({ content }: { content: string }): React.ReactElement {
+  const blocks = splitContentWithVideoEmbeds(content);
+
+  return (
+    <div className="prose prose-slate max-w-none prose-img:rounded-lg">
+      {blocks.map((b, idx) => {
+        if (b.type === "video") {
+          return (
+            <div key={`video-${idx}`} className="my-6">
+              <video
+                controls
+                preload="metadata"
+                playsInline
+                className="w-full rounded-xl border border-slate-200 bg-black"
+              >
+                <source src={b.src} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+              <p className="mt-2 text-sm text-slate-600">Event highlight clip</p>
+            </div>
+          );
+        }
+
+        return (
+          <ReactMarkdown key={`md-${idx}`} remarkPlugins={[remarkGfm]}>
+            {b.value}
+          </ReactMarkdown>
+        );
+      })}
+    </div>
   );
 }
 
