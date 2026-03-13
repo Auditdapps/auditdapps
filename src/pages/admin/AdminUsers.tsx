@@ -4,13 +4,16 @@ import toast from "react-hot-toast";
 import { supabase } from "@/lib/supabaseClient";
 import type { Period, PlanTier } from "./_adminTypes";
 
+type AccountRole = "user" | "editor" | "admin";
+type AuditUserType = "developer" | "organization" | null;
+
 type ProfileRow = {
   id: string;
   email: string | null;
   org_name: string | null;
-  role: string | null;
+  account_role: AccountRole | null;
+  audit_user_type: AuditUserType;
   created_at: string | null;
-  is_admin: boolean | null;
   is_premium: boolean | null;
   premium_expires_at: string | null;
   plan_tier: PlanTier | null;
@@ -18,14 +21,13 @@ type ProfileRow = {
 };
 
 type AdminAction =
-  | { action: "set_admin"; targetUserId: string; is_admin: boolean }
+  | { action: "set_account_role"; targetUserId: string; account_role: AccountRole }
   | { action: "grant_premium"; targetUserId: string; plan_period: Period }
   | { action: "revoke_premium"; targetUserId: string }
   | { action: "delete_user"; targetUserId: string };
 
 type AdminFnOk<T = unknown> = { ok: true } & T;
 type AdminFnErr = { error: string; details?: string };
-type AdminFnResponse<T = unknown> = AdminFnOk<T> | AdminFnErr;
 
 type GrantPremiumModalState =
   | { open: false }
@@ -36,8 +38,9 @@ type DeleteUserModalState =
   | { open: true; user: ProfileRow; typed: string };
 
 function isPremiumActive(row: ProfileRow) {
-  if (!row) return false;
-  if (row.premium_expires_at) return new Date(row.premium_expires_at) > new Date();
+  if (row.premium_expires_at) {
+    return new Date(row.premium_expires_at) > new Date();
+  }
   return row.is_premium === true;
 }
 
@@ -47,9 +50,9 @@ function getErrorMessageFromInvoke(params: {
 }) {
   const { invokeError, data } = params;
 
-  // Supabase Functions errors are often "Edge Function returned a non-2xx status code"
-  // but the real message is usually in error.context or returned JSON { error }.
-  const maybeErr = invokeError as { message?: string; context?: { statusText?: string } } | null;
+  const maybeErr = invokeError as
+    | { message?: string; context?: { statusText?: string } }
+    | null;
 
   const ctxText = maybeErr?.context?.statusText;
   if (ctxText) return ctxText;
@@ -71,13 +74,56 @@ async function adminAction<T = unknown>(body: AdminAction): Promise<AdminFnOk<T>
     throw new Error(msg);
   }
 
-  // Function can still return { error } with 200
   if (data && typeof data === "object" && "error" in data) {
     const e = (data as AdminFnErr).error;
     throw new Error(typeof e === "string" ? e : "Request failed");
   }
 
   return (data as AdminFnOk<T>) ?? ({ ok: true } as AdminFnOk<T>);
+}
+
+function roleBadgeClass(role: AccountRole | null) {
+  switch (role) {
+    case "admin":
+      return "bg-indigo-100 text-indigo-800";
+    case "editor":
+      return "bg-blue-100 text-blue-800";
+    default:
+      return "bg-slate-100 text-slate-700";
+  }
+}
+
+function auditTypeBadgeClass(type: AuditUserType) {
+  switch (type) {
+    case "developer":
+      return "bg-amber-100 text-amber-800";
+    case "organization":
+      return "bg-emerald-100 text-emerald-800";
+    default:
+      return "bg-slate-100 text-slate-700";
+  }
+}
+
+function prettyRole(role: AccountRole | null) {
+  switch (role) {
+    case "admin":
+      return "Admin";
+    case "editor":
+      return "Editor";
+    default:
+      return "User";
+  }
+}
+
+function prettyAuditType(type: AuditUserType) {
+  switch (type) {
+    case "developer":
+      return "Developer";
+    case "organization":
+      return "Organization";
+    default:
+      return "—";
+  }
 }
 
 export default function AdminUsers() {
@@ -92,13 +138,17 @@ export default function AdminUsers() {
   const load = async () => {
     try {
       setLoading(true);
+
       const { data, error } = await supabase
         .from("profiles")
-        .select("id,email,org_name,role,created_at,is_admin,is_premium,premium_expires_at,plan_tier,plan_period")
+        .select(
+          "id,email,org_name,account_role,audit_user_type,created_at,is_premium,premium_expires_at,plan_tier,plan_period"
+        )
         .order("created_at", { ascending: false })
         .limit(250);
 
       if (error) throw error;
+
       setRows((data as ProfileRow[]) ?? []);
     } catch (e) {
       console.error("[AdminUsers] load error", e);
@@ -109,42 +159,68 @@ export default function AdminUsers() {
   };
 
   useEffect(() => {
-    load();
+    void load();
   }, []);
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
     if (!s) return rows;
+
     return rows.filter((r) =>
-      [r.email, r.org_name, r.role, r.id]
+      [r.email, r.org_name, r.account_role, r.audit_user_type, r.id]
         .filter(Boolean)
         .some((v) => String(v).toLowerCase().includes(s))
     );
   }, [rows, q]);
 
-  const toggleAdmin = async (row: ProfileRow) => {
+  const updateAccountRole = async (row: ProfileRow, nextRole: AccountRole) => {
+    const currentRole = row.account_role ?? "user";
+    if (currentRole === nextRole) return;
+    if (busyId === row.id) return;
+
+    const label = row.email ?? row.id;
+
+    if (nextRole === "admin") {
+      const confirmed = window.confirm(`Promote ${label} to admin?`);
+      if (!confirmed) return;
+    }
+
+    if (currentRole === "admin" && nextRole !== "admin") {
+      const confirmed = window.confirm(`Remove admin access from ${label}?`);
+      if (!confirmed) return;
+    }
+
     try {
       setBusyId(row.id);
-      const next = !(row.is_admin === true);
 
       await adminAction({
-        action: "set_admin",
+        action: "set_account_role",
         targetUserId: row.id,
-        is_admin: next,
+        account_role: nextRole,
       });
 
-      toast.success(next ? "Admin granted" : "Admin removed");
-      await load();
+      setRows((prev) =>
+        prev.map((item) =>
+          item.id === row.id ? { ...item, account_role: nextRole } : item
+        )
+      );
+
+      toast.success(`Role updated to ${prettyRole(nextRole)}`);
     } catch (e) {
-      console.error("[AdminUsers] toggleAdmin", e);
-      toast.error(e instanceof Error ? e.message : "Could not update admin flag.");
+      console.error("[AdminUsers] updateAccountRole", e);
+      toast.error(e instanceof Error ? e.message : "Could not update role.");
+      await load();
     } finally {
       setBusyId(null);
     }
   };
 
   const openGrantPremium = (row: ProfileRow) => {
-    setGrantModal({ open: true, user: row, period: row.plan_period ?? "monthly" });
+    setGrantModal({
+      open: true,
+      user: row,
+      period: row.plan_period ?? "monthly",
+    });
   };
 
   const confirmGrantPremium = async () => {
@@ -174,7 +250,10 @@ export default function AdminUsers() {
   };
 
   const revokePremium = async (row: ProfileRow) => {
-    if (!confirm("Revoke premium for this user?")) return;
+    if (busyId === row.id) return;
+
+    const confirmed = window.confirm("Revoke premium for this user?");
+    if (!confirmed) return;
 
     try {
       setBusyId(row.id);
@@ -219,7 +298,7 @@ export default function AdminUsers() {
 
       toast.success("User deleted");
       setDeleteModal({ open: false });
-      await load();
+      setRows((prev) => prev.filter((item) => item.id !== user.id));
     } catch (e) {
       console.error("[AdminUsers] deleteUser", e);
       toast.error(e instanceof Error ? e.message : "Could not delete user.");
@@ -233,15 +312,17 @@ export default function AdminUsers() {
       <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold">Users</h1>
-          <p className="text-sm text-muted-foreground">Profiles, roles, premium state and quick admin actions.</p>
+          <p className="text-sm text-muted-foreground">
+            Manage account roles, premium state, and account access.
+          </p>
         </div>
 
         <div className="flex items-center gap-2">
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search email/org/role/id…"
-            className="h-10 w-72 max-w-full rounded-xl border border-border bg-background px-3 text-sm"
+            placeholder="Search email, org, role, type, or ID…"
+            className="h-10 w-80 max-w-full rounded-xl border border-border bg-background px-3 text-sm"
           />
           <button
             onClick={load}
@@ -259,8 +340,9 @@ export default function AdminUsers() {
               <tr>
                 <th className="px-4 py-3 text-left">Email</th>
                 <th className="px-4 py-3 text-left">Org</th>
-                <th className="px-4 py-3 text-left">Role</th>
-                <th className="px-4 py-3 text-left">Admin</th>
+                <th className="px-4 py-3 text-left">Audit Type</th>
+                <th className="px-4 py-3 text-left">Access Role</th>
+                <th className="px-4 py-3 text-left">Change Role</th>
                 <th className="px-4 py-3 text-left">Plan</th>
                 <th className="px-4 py-3 text-left">Premium status</th>
                 <th className="px-4 py-3 text-left">Created</th>
@@ -271,13 +353,13 @@ export default function AdminUsers() {
             <tbody className="divide-y divide-border">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
+                  <td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">
                     Loading users…
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
+                  <td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">
                     No users found.
                   </td>
                 </tr>
@@ -287,38 +369,71 @@ export default function AdminUsers() {
                   const plan = row.plan_tier ?? "free";
                   const period = row.plan_period ?? "—";
                   const isBusy = busyId === row.id;
+                  const currentRole = row.account_role ?? "user";
 
                   return (
                     <tr key={row.id} className="hover:bg-muted/40">
                       <td className="px-4 py-3">
-                        <Link className="font-medium hover:underline" to={`/admin/users/${row.id}`}>
+                        <Link
+                          className="font-medium hover:underline"
+                          to={`/admin/users/${row.id}`}
+                        >
                           {row.email ?? "(no email)"}
                         </Link>
                         <div className="text-[11px] text-muted-foreground">{row.id}</div>
                       </td>
 
                       <td className="px-4 py-3">{row.org_name ?? "—"}</td>
-                      <td className="px-4 py-3">{row.role ?? "—"}</td>
 
                       <td className="px-4 py-3">
                         <span
-                          className={`inline-flex rounded-full px-2 py-1 text-[11px] font-semibold ${
-                            row.is_admin ? "bg-indigo-100 text-indigo-800" : "bg-slate-100 text-slate-700"
-                          }`}
+                          className={`inline-flex rounded-full px-2 py-1 text-[11px] font-semibold ${auditTypeBadgeClass(
+                            row.audit_user_type
+                          )}`}
                         >
-                          {row.is_admin ? "Admin" : "User"}
+                          {prettyAuditType(row.audit_user_type)}
                         </span>
                       </td>
 
                       <td className="px-4 py-3">
-                        <div className="font-medium">{plan}</div>
-                        <div className="text-[11px] text-muted-foreground">{period}</div>
+                        <span
+                          className={`inline-flex rounded-full px-2 py-1 text-[11px] font-semibold ${roleBadgeClass(
+                            currentRole
+                          )}`}
+                        >
+                          {prettyRole(currentRole)}
+                        </span>
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <select
+                          value={currentRole}
+                          disabled={isBusy}
+                          onChange={(e) =>
+                            updateAccountRole(row, e.target.value as AccountRole)
+                          }
+                          className="h-9 rounded-lg border border-border bg-background px-3 text-sm disabled:opacity-50"
+                          aria-label={`Change role for ${row.email ?? row.id}`}
+                        >
+                          <option value="user">User</option>
+                          <option value="editor">Editor</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <div className="font-medium capitalize">{plan}</div>
+                        <div className="text-[11px] text-muted-foreground capitalize">
+                          {period}
+                        </div>
                       </td>
 
                       <td className="px-4 py-3">
                         <span
                           className={`inline-flex rounded-full px-2 py-1 text-[11px] font-semibold ${
-                            active ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-700"
+                            active
+                              ? "bg-emerald-100 text-emerald-800"
+                              : "bg-slate-100 text-slate-700"
                           }`}
                         >
                           {active ? "Active" : "Expired/Free"}
@@ -326,25 +441,20 @@ export default function AdminUsers() {
 
                         {row.premium_expires_at && (
                           <div className="mt-1 text-[11px] text-muted-foreground">
-                            Expires: {new Date(row.premium_expires_at).toLocaleDateString()}
+                            Expires:{" "}
+                            {new Date(row.premium_expires_at).toLocaleDateString()}
                           </div>
                         )}
                       </td>
 
                       <td className="px-4 py-3 text-xs text-muted-foreground">
-                        {row.created_at ? new Date(row.created_at).toLocaleDateString() : "—"}
+                        {row.created_at
+                          ? new Date(row.created_at).toLocaleDateString()
+                          : "—"}
                       </td>
 
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap justify-end gap-2">
-                          <button
-                            onClick={() => toggleAdmin(row)}
-                            disabled={isBusy}
-                            className="h-8 rounded-lg border border-border bg-background px-3 text-xs font-semibold hover:bg-accent/60 disabled:opacity-50"
-                          >
-                            {row.is_admin ? "Remove admin" : "Make admin"}
-                          </button>
-
                           {active ? (
                             <button
                               onClick={() => revokePremium(row)}
@@ -385,7 +495,6 @@ export default function AdminUsers() {
         </div>
       </section>
 
-      {/* Grant Premium modal */}
       {grantModal.open ? (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4">
           <div className="w-full max-w-md rounded-2xl border border-border bg-card p-5 shadow-lg">
@@ -438,14 +547,15 @@ export default function AdminUsers() {
         </div>
       ) : null}
 
-      {/* Delete user modal */}
       {deleteModal.open ? (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4">
           <div className="w-full max-w-md rounded-2xl border border-red-200 bg-card p-5 shadow-lg">
-            <div className="mb-1 text-lg font-semibold text-red-700">Danger Zone: Delete user</div>
+            <div className="mb-1 text-lg font-semibold text-red-700">
+              Danger Zone: Delete user
+            </div>
             <p className="text-sm text-muted-foreground">
-              This will delete the user and all related data via cascades (profiles, audits, recommendations, feedback,
-              requests). This cannot be undone.
+              This will delete the user and all related data via cascades. This cannot
+              be undone.
             </p>
 
             <div className="mt-3 text-sm">
@@ -464,7 +574,9 @@ export default function AdminUsers() {
             <input
               id="delete-user-confirm"
               value={deleteModal.typed}
-              onChange={(e) => setDeleteModal({ ...deleteModal, typed: e.target.value })}
+              onChange={(e) =>
+                setDeleteModal({ ...deleteModal, typed: e.target.value })
+              }
               className="mt-2 h-10 w-full rounded-xl border border-border bg-background px-3 text-sm"
               placeholder="DELETE"
             />
@@ -478,7 +590,10 @@ export default function AdminUsers() {
               </button>
               <button
                 onClick={confirmDeleteUser}
-                disabled={busyId === deleteModal.user.id || deleteModal.typed.trim() !== "DELETE"}
+                disabled={
+                  busyId === deleteModal.user.id ||
+                  deleteModal.typed.trim() !== "DELETE"
+                }
                 className="h-9 rounded-xl bg-red-600 px-4 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50"
               >
                 Delete user
