@@ -1,6 +1,6 @@
 // src/components/AdminSidebar.tsx
 import React from "react";
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
@@ -11,8 +11,6 @@ import {
   FileText,
   FilePlus2,
   BookMarked,
-  Tags,
-  Images,
   Settings,
   LogOut,
   ChevronLeft,
@@ -21,6 +19,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
+import { useAccountRole } from "@/hooks/useAccountRole";
 
 type Props = {
   open: boolean;
@@ -43,32 +42,6 @@ type Section = {
   items: NavItem[];
 };
 
-const sections: Section[] = [
-  {
-    label: "Overview",
-    items: [
-      { to: "/admin", icon: LayoutDashboard, label: "Overview", end: true },
-      { to: "/admin/users", icon: Users, label: "Users" },
-      { to: "/admin/audits", icon: ShieldCheck, label: "Audits" },
-      { to: "/admin/recommendations", icon: AlertTriangle, label: "Recommendations" },
-      { to: "/admin/requests", icon: ClipboardList, label: "Manual Requests" },
-      { to: "/admin/feedback", icon: MessageSquareText, label: "Feedback" },
-    ],
-  },
-  {
-    label: "Content",
-    items: [
-      { to: "/admin/posts", icon: FileText, label: "Blog Posts" },
-      { to: "/admin/posts/new", icon: FilePlus2, label: "New Post", accent: true },
-      { to: "/admin/posts?status=draft", icon: BookMarked, label: "Drafts", badge: "•" },
-      { to: "/admin/posts?status=published", icon: Sparkles, label: "Published" },
-      { to: "/admin/posts?category=all", icon: Tags, label: "Categories" },
-      { to: "/admin/media", icon: Images, label: "Media" },
-    ],
-  },
-  { label: "System", items: [{ to: "/admin/settings", icon: Settings, label: "Settings" }] },
-];
-
 function Kbd({ children }: { children: React.ReactNode }) {
   return (
     <kbd className="ml-2 rounded border bg-white px-1.5 py-0.5 text-[10px] font-medium text-slate-600 shadow-sm">
@@ -79,7 +52,57 @@ function Kbd({ children }: { children: React.ReactNode }) {
 
 export default function AdminSidebar({ open, onClose, expanded, setExpanded }: Props) {
   const nav = useNavigate();
-  const { pathname } = useLocation(); // kept if you use it for active states elsewhere
+  const { accountRole, loading } = useAccountRole();
+
+  const isAdmin = accountRole === "admin";
+  const isEditor = accountRole === "editor";
+
+  const sections: Section[] = React.useMemo(() => {
+    if (isAdmin) {
+      return [
+        {
+          label: "Overview",
+          items: [
+            { to: "/admin", icon: LayoutDashboard, label: "Overview", end: true },
+            { to: "/admin/users", icon: Users, label: "Users" },
+            { to: "/admin/audits", icon: ShieldCheck, label: "Audits" },
+            { to: "/admin/recommendations", icon: AlertTriangle, label: "Recommendations" },
+            { to: "/admin/requests", icon: ClipboardList, label: "Manual Requests" },
+            { to: "/admin/feedback", icon: MessageSquareText, label: "Feedback" },
+          ],
+        },
+        {
+          label: "Content",
+          items: [
+            { to: "/admin/posts", icon: FileText, label: "Blog Posts" },
+            { to: "/admin/posts/new", icon: FilePlus2, label: "New Post", accent: true },
+            { to: "/admin/posts?status=draft", icon: BookMarked, label: "Drafts", badge: "•" },
+            { to: "/admin/posts?status=published", icon: Sparkles, label: "Published" },
+          ],
+        },
+        {
+          label: "System",
+          items: [{ to: "/admin/settings", icon: Settings, label: "Settings" }],
+        },
+      ];
+    }
+
+    if (isEditor) {
+      return [
+        {
+          label: "Content",
+          items: [
+            { to: "/admin/posts", icon: FileText, label: "Blog Posts", end: true },
+            { to: "/admin/posts/new", icon: FilePlus2, label: "New Post", accent: true },
+            { to: "/admin/posts?status=draft", icon: BookMarked, label: "Drafts", badge: "•" },
+            { to: "/admin/posts?status=published", icon: Sparkles, label: "Published" },
+          ],
+        },
+      ];
+    }
+
+    return [];
+  }, [isAdmin, isEditor]);
 
   React.useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -88,6 +111,7 @@ export default function AdminSidebar({ open, onClose, expanded, setExpanded }: P
         setExpanded(!expanded);
       }
     };
+
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [expanded, setExpanded]);
@@ -108,22 +132,24 @@ export default function AdminSidebar({ open, onClose, expanded, setExpanded }: P
     }
   };
 
+  if (loading) {
+    return null;
+  }
+
   return (
     <>
-      {/* Mobile top bar */}
       <div className="lg:hidden sticky top-0 z-40 bg-white/80 backdrop-blur border-b">
         <div className="h-14 px-4 flex items-center justify-between">
           <button
-            onClick={() => {
-              setExpanded(true);
-              // If you also need to set `open` in the parent, add an `onOpen` prop there and call it here.
-            }}
+            onClick={() => setExpanded(true)}
             className="p-2 rounded-md hover:bg-slate-100"
             aria-label="Open sidebar"
           >
             <Menu className="h-5 w-5" />
           </button>
-          <span className="font-semibold">Admin</span>
+
+          <span className="font-semibold">{isAdmin ? "Admin" : "Editor"}</span>
+
           <button
             onClick={() => nav("/admin/posts/new")}
             className="inline-flex h-9 items-center rounded-md bg-blue-600 px-3 text-white text-sm font-semibold"
@@ -154,9 +180,14 @@ export default function AdminSidebar({ open, onClose, expanded, setExpanded }: P
       >
         <div className="hidden lg:flex items-center h-14 border-b px-3">
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-blue-600 text-white grid place-items-center font-bold">AD</div>
-            <div className={`text-sm font-semibold text-slate-800 transition ${labelCls}`}>AuditDapps Admin</div>
+            <div className="h-8 w-8 rounded-lg bg-blue-600 text-white grid place-items-center font-bold">
+              AD
+            </div>
+            <div className={`text-sm font-semibold text-slate-800 transition ${labelCls}`}>
+              {isAdmin ? "AuditDapps Admin" : "AuditDapps Editor"}
+            </div>
           </div>
+
           <div className="ml-auto">
             <button
               onClick={() => setExpanded(!expanded)}
@@ -177,6 +208,7 @@ export default function AdminSidebar({ open, onClose, expanded, setExpanded }: P
             <FilePlus2 className="h-4 w-4" />
             <span className={`transition ${labelCls}`}>New Post</span>
           </button>
+
           <div className={`mt-2 text-[11px] text-slate-500 ${expanded ? "" : "hidden"}`}>
             Quick actions <Kbd>Shift</Kbd>+<Kbd>A</Kbd> to toggle
           </div>
@@ -196,6 +228,7 @@ export default function AdminSidebar({ open, onClose, expanded, setExpanded }: P
               <ul className="space-y-1">
                 {group.items.map((item) => {
                   const Icon = item.icon;
+
                   return (
                     <li key={item.to}>
                       <NavLink
@@ -212,9 +245,13 @@ export default function AdminSidebar({ open, onClose, expanded, setExpanded }: P
                       >
                         <Icon className="h-4 w-4 shrink-0" />
                         <span className={`flex-1 transition ${labelCls}`}>{item.label}</span>
+
                         {item.badge && expanded && (
-                          <span className="text-[10px] rounded bg-slate-200 px-1.5 py-0.5">{item.badge}</span>
+                          <span className="text-[10px] rounded bg-slate-200 px-1.5 py-0.5">
+                            {item.badge}
+                          </span>
                         )}
+
                         {item.accent && expanded && (
                           <span className="ml-auto inline-flex items-center rounded bg-blue-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">
                             NEW

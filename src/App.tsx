@@ -42,8 +42,8 @@ import BlogPost from "./pages/BlogPost";
 import AuditDetails from "./pages/AuditDetails";
 import NotFound from "./pages/NotFound";
 import Home from "./pages/Home";
-
 import RequireAdmin from "./components/RequireAdmin";
+import RequireEditor from "./components/RequireEditor";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminOverview from "./pages/admin/AdminOverview";
@@ -212,43 +212,106 @@ function AppShell() {
         <Route
           path="/admin"
           element={
-            <RequireAdmin>
+            <RequireEditor>
               <AdminLayout />
-            </RequireAdmin>
+            </RequireEditor>
           }
         >
-          <Route index element={<AdminOverview />} />
-
-          {/* Overview */}
-          <Route path="overview" element={<AdminOverview />} />
-
-          {/* Users */}
-          <Route path="users" element={<AdminUsers />} />
-          <Route path="users/:id" element={<AdminUserDetail />} />
-
-          {/* Audits */}
-          <Route path="audits" element={<AdminAudits />} />
-          <Route path="audits/:id" element={<AdminAuditDetail />} />
-
-          {/* Recommendations */}
-          <Route path="recommendations" element={<AdminRecommendations />} />
-
-          {/* Manual audit requests */}
-          <Route path="requests" element={<AdminRequests />} />
-
-          {/* Feedback */}
-          <Route path="feedback" element={<AdminFeedback />} />
-
-          {/* Blog */}
+          {/* editor + admin */}
           <Route path="posts" element={<AdminDashboard />} />
           <Route path="posts/new" element={<PostEditor />} />
           <Route path="posts/:id" element={<PostEditor />} />
           <Route path="posts/:id/edit" element={<PostEditor />} />
-          <Route path="posts/:id/edit" element={<PostEditor />} />
 
-          {/* Settings */}
-          <Route path="media" element={<AdminMedia />} />
-          <Route path="settings" element={<AdminSettings />} />
+          {/* admin only */}
+          <Route
+            index
+            element={
+              <RequireAdmin>
+                <AdminOverview />
+              </RequireAdmin>
+            }
+          />
+          <Route
+            path="overview"
+            element={
+              <RequireAdmin>
+                <AdminOverview />
+              </RequireAdmin>
+            }
+          />
+          <Route
+            path="users"
+            element={
+              <RequireAdmin>
+                <AdminUsers />
+              </RequireAdmin>
+            }
+          />
+          <Route
+            path="users/:id"
+            element={
+              <RequireAdmin>
+                <AdminUserDetail />
+              </RequireAdmin>
+            }
+          />
+          <Route
+            path="audits"
+            element={
+              <RequireAdmin>
+                <AdminAudits />
+              </RequireAdmin>
+            }
+          />
+          <Route
+            path="audits/:id"
+            element={
+              <RequireAdmin>
+                <AdminAuditDetail />
+              </RequireAdmin>
+            }
+          />
+          <Route
+            path="recommendations"
+            element={
+              <RequireAdmin>
+                <AdminRecommendations />
+              </RequireAdmin>
+            }
+          />
+          <Route
+            path="requests"
+            element={
+              <RequireAdmin>
+                <AdminRequests />
+              </RequireAdmin>
+            }
+          />
+          <Route
+            path="feedback"
+            element={
+              <RequireAdmin>
+                <AdminFeedback />
+              </RequireAdmin>
+            }
+          />
+          <Route
+            path="media"
+            element={
+              <RequireAdmin>
+                <AdminMedia />
+              </RequireAdmin>
+            }
+          />
+          <Route
+            path="settings"
+            element={
+              <RequireAdmin>
+                <AdminSettings />
+              </RequireAdmin>
+            }
+          />
         </Route>
         {/* 404 */}
         <Route path="*" element={<NotFound />} />
